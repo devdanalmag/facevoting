@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Voting System</title>
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .section-title {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        #camera-container, #verification-camera {
+            margin: 20px 0;
+            position: relative;
+        }
+        video {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            max-width: 100%;
+        }
+        canvas {
+            display: none;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        #enroll-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        #voter-info {
+            display: none;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        #voter-info h3 {
+            margin-top: 0;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 10px;
+        }
+        .info-label {
+            font-weight: bold;
+        }
+        #verification-result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        #voters-list {
+            margin-top: 20px;
+        }
+        .voter-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            display: flex;
+        }
+        .voter-photo {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            margin-right: 20px;
+            border: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <h1>Face Voting System</h1>
+    
+    <div class="section">
+        <h2 class="section-title">1. Voter Enrollment</h2>
+        <form id="enroll-form">
+            <div class="form-group">
+                <label for="fullName">Full Name</label>
+                <input type="text" id="fullName" required>
+            </div>
+            <div class="form-group">
+                <label for="idNumber">ID Number</label>
+                <input type="text" id="idNumber" required>
+            </div>
+            <div class="form-group">
+                <label for="dob">Date of Birth</label>
+                <input type="date" id="dob" required>
+            </div>
+            <div class="form-group">
+                <label for="gender">Gender</label>
+                <select id="gender" required>
+                    <option value="">Select</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="address">Address</label>
+                <input type="text" id="address" required>
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email">
+            </div>
+        </form>
+        
+        <div id="camera-container">
+            <video id="video" width="640" height="480" autoplay></video>
+            <canvas id="canvas" width="640" height="480"></canvas>
+        </div>
+        
+        <button id="capture-btn">Capture Photo</button>
+        <button id="enroll-btn" disabled>Enroll Voter</button>
+        <img id="preview-photo" style="display: none; max-width: 200px; margin-left: 20px;">
+    </div>
+    
+    <div class="section">
+        <h2 class="section-title">2. Voter Verification</h2>
+        <div id="verification-camera">
+            <video id="verification-video" width="640" height="480" autoplay></video>
+            <canvas id="verification-canvas" width="640" height="480"></canvas>
+        </div>
+        
+        <button id="verify-btn">Verify Voter</button>
+        
+        <div id="verification-result"></div>
+        
+        <div id="voter-info">
+            <h3>Voter Information</h3>
+            <div class="info-grid">
+                <div class="info-label">Name:</div>
+                <div id="info-name"></div>
+                <div class="info-label">ID Number:</div>
+                <div id="info-id"></div>
+                <div class="info-label">Date of Birth:</div>
+                <div id="info-dob"></div>
+                <div class="info-label">Gender:</div>
+                <div id="info-gender"></div>
+                <div class="info-label">Address:</div>
+                <div id="info-address"></div>
+                <div class="info-label">Phone:</div>
+                <div id="info-phone"></div>
+                <div class="info-label">Email:</div>
+                <div id="info-email"></div>
+                <div class="info-label">Voting Status:</div>
+                <div id="info-status"></div>
+            </div>
+            
+            <button id="cast-vote-btn" style="margin-top: 20px;">Cast Vote</button>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2 class="section-title">3. Registered Voters</h2>
+        <button id="refresh-list-btn">Refresh List</button>
+        <div id="voters-list"></div>
+    </div>
+    
+    <script>
+        // DOM elements
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const verificationVideo = document.getElementById('verification-video');
+        const verificationCanvas = document.getElementById('verification-canvas');
+        const captureBtn = document.getElementById('capture-btn');
+        const enrollBtn = document.getElementById('enroll-btn');
+        const verifyBtn = document.getElementById('verify-btn');
+        const castVoteBtn = document.getElementById('cast-vote-btn');
+        const refreshListBtn = document.getElementById('refresh-list-btn');
+        const previewPhoto = document.getElementById('preview-photo');
+        const voterInfo = document.getElementById('voter-info');
+        const verificationResult = document.getElementById('verification-result');
+        const votersList = document.getElementById('voters-list');
+        
+        // Form fields
+        const fullName = document.getElementById('fullName');
+        const idNumber = document.getElementById('idNumber');
+        const dob = document.getElementById('dob');
+        const gender = document.getElementById('gender');
+        const address = document.getElementById('address');
+        const phone = document.getElementById('phone');
+        const email = document.getElementById('email');
+        
+        // Info display fields
+        const infoName = document.getElementById('info-name');
+        const infoId = document.getElementById('info-id');
+        const infoDob = document.getElementById('info-dob');
+        const infoGender = document.getElementById('info-gender');
+        const infoAddress = document.getElementById('info-address');
+        const infoPhone = document.getElementById('info-phone');
+        const infoEmail = document.getElementById('info-email');
+        const infoStatus = document.getElementById('info-status');
+        
+        // Variables
+        let enrollmentStream = null;
+        let verificationStream = null;
+        let capturedPhoto = null;
+        let voters = [];
+        let currentVoter = null;
+        
+        // Initialize face-api.js models
+        async function loadModels() {
+            try {
+                await faceapi.nets.tinyFaceDetector.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
+                await faceapi.nets.faceRecognitionNet.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
+                await faceapi.nets.faceLandmark68Net.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
+                console.log('Face detection models loaded');
+            } catch (error) {
+                console.error('Error loading models:', error);
+                alert('Error loading face detection models. Please try again.');
+            }
+        }
+        
+        // Start enrollment camera
+        async function startEnrollmentCamera() {
+            try {
+                enrollmentStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: 640, height: 480, facingMode: 'user' }, 
+                    audio: false 
+                });
+                video.srcObject = enrollmentStream;
+                captureBtn.disabled = false;
+            } catch (err) {
+                console.error("Error accessing camera: ", err);
+                alert("Could not access the camera. Please ensure you've granted camera permissions.");
+            }
+        }
+        
+        // Start verification camera
+        async function startVerificationCamera() {
+            try {
+                verificationStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: 640, height: 480, facingMode: 'user' }, 
+                    audio: false 
+                });
+                verificationVideo.srcObject = verificationStream;
+                verifyBtn.disabled = false;
+            } catch (err) {
+                console.error("Error accessing camera: ", err);
+                alert("Could not access the camera. Please ensure you've granted camera permissions.");
+            }
+        }
+        
+        // Stop enrollment camera
+        function stopEnrollmentCamera() {
+            if (enrollmentStream) {
+                enrollmentStream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                captureBtn.disabled = true;
+            }
+        }
+        
+        // Stop verification camera
+        function stopVerificationCamera() {
+            if (verificationStream) {
+                verificationStream.getTracks().forEach(track => track.stop());
+                verificationVideo.srcObject = null;
+                verifyBtn.disabled = true;
+            }
+        }
+        
+        // Capture photo for enrollment
+        async function capturePhoto() {
+            if (!enrollmentStream) return;
+            
+            // Draw video frame to canvas
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Get the image data
+            capturedPhoto = canvas.toDataURL('image/png');
+            
+            // Detect faces in the captured image
+            const detections = await faceapi.detectAllFaces(canvas, new faceapi.TinyFaceDetectorOptions())
+                .withFaceLandmarks()
+                .withFaceDescriptors();
+            
+            if (detections.length === 0) {
+                alert("No face detected. Please try again.");
+                return;
+            }
+            
+            if (detections.length > 1) {
+                alert("Multiple faces detected. Only one person is allowed in the photo.");
+                return;
+            }
+            
+            // Show preview
+            previewPhoto.src = capturedPhoto;
+            previewPhoto.style.display = 'block';
+            
+            // Enable enroll button
+            enrollBtn.disabled = false;
+            
+            alert("Photo captured successfully! Please complete the form and click 'Enroll Voter'.");
+        }
+        
+        // Enroll new voter
+        async function enrollVoter() {
+            if (!capturedPhoto) {
+                alert("Please capture a photo first.");
+                return;
+            }
+            
+            // Validate form
+            if (!fullName.value || !idNumber.value || !dob.value || !gender.value || !address.value || !phone.value) {
+                alert("Please fill all required fields.");
+                return;
+            }
+            
+            // Check if ID already exists
+            if (voters.some(voter => voter.idNumber === idNumber.value)) {
+                alert("A voter with this ID number is already registered.");
+                return;
+            }
+            
+            // Get face descriptor
+            const detections = await faceapi.detectAllFaces(canvas, new faceapi.TinyFaceDetectorOptions())
+                .withFaceLandmarks()
+                .withFaceDescriptors();
+            
+            if (detections.length === 0) {
+                alert("No face detected in the captured photo. Please try again.");
+                return;
+            }
+            
+            const descriptor = detections[0].descriptor;
+            
+            // Create voter object
+            const voter = {
+                id: Date.now().toString(),
+                fullName: fullName.value,
+                idNumber: idNumber.value,
+                dob: dob.value,
+                gender: gender.value,
+                address: address.value,
+                phone: phone.value,
+                email: email.value,
+                photo: capturedPhoto,
+                descriptor: Array.from(descriptor), // Convert Float32Array to regular array
+                hasVoted: false,
+                enrolledAt: new Date().toISOString()
+            };
+            
+            // Add to voters array
+            voters.push(voter);
+            
+            // Save to localStorage
+            localStorage.setItem('voters', JSON.stringify(voters));
+            
+            // Reset form
+            document.getElementById('enroll-form').reset();
+            previewPhoto.style.display = 'none';
+            capturedPhoto = null;
+            enrollBtn.disabled = true;
+            
+            // Refresh voters list
+            displayVotersList();
+            
+            alert(`Voter ${voter.fullName} enrolled successfully!`);
+        }
+        
+        // Verify voter
+        async function verifyVoter() {
+            if (!verificationStream) return;
+            
+            // Draw video frame to canvas
+            const context = verificationCanvas.getContext('2d');
+            context.drawImage(verificationVideo, 0, 0, verificationCanvas.width, verificationCanvas.height);
+            
+            // Detect faces in the captured image
+            const detections = await faceapi.detectAllFaces(verificationCanvas, new faceapi.TinyFaceDetectorOptions())
+                .withFaceLandmarks()
+                .withFaceDescriptors();
+            
+            if (detections.length === 0) {
+                showVerificationResult("No face detected. Please try again.", false);
+                return;
+            }
+            
+            if (detections.length > 1) {
+                showVerificationResult("Multiple faces detected. Only one person can verify at a time.", false);
+                return;
+            }
+            
+            const currentDescriptor = detections[0].descriptor;
+            
+            // Find the best match among registered voters
+            let bestMatch = null;
+            let minDistance = Infinity;
+            
+            for (const voter of voters) {
+                // Convert stored descriptor back to Float32Array
+                const storedDescriptor = new Float32Array(voter.descriptor);
+                const distance = faceapi.euclideanDistance(currentDescriptor, storedDescriptor);
+                
+                if (distance < minDistance && distance < 0.5) { // Threshold for matching
+                    minDistance = distance;
+                    bestMatch = voter;
+                }
+            }
+            
+            if (bestMatch) {
+                currentVoter = bestMatch;
+                displayVoterInfo(bestMatch);
+                showVerificationResult(`Verification successful! Welcome ${bestMatch.fullName}.`, true);
+            } else {
+                showVerificationResult("No matching voter found. Please enroll first.", false);
+            }
+        }
+        
+        // Display voter information
+        function displayVoterInfo(voter) {
+            infoName.textContent = voter.fullName;
+            infoId.textContent = voter.idNumber;
+            infoDob.textContent = new Date(voter.dob).toLocaleDateString();
+            infoGender.textContent = voter.gender;
+            infoAddress.textContent = voter.address;
+            infoPhone.textContent = voter.phone;
+            infoEmail.textContent = voter.email || 'N/A';
+            infoStatus.textContent = voter.hasVoted ? 'Already voted' : 'Eligible to vote';
+            
+            castVoteBtn.disabled = voter.hasVoted;
+            voterInfo.style.display = 'block';
+        }
+        
+        // Show verification result
+        function showVerificationResult(message, isSuccess) {
+            verificationResult.textContent = message;
+            verificationResult.className = isSuccess ? 'success' : 'error';
+            verificationResult.style.display = 'block';
+        }
+        
+        // Cast vote
+        function castVote() {
+            if (!currentVoter) return;
+            
+            if (currentVoter.hasVoted) {
+                alert("This voter has already cast their vote.");
+                return;
+            }
+            
+            // Update voter status
+            currentVoter.hasVoted = true;
+            currentVoter.votedAt = new Date().toISOString();
+            
+            // Update in voters array
+            const index = voters.findIndex(v => v.id === currentVoter.id);
+            if (index !== -1) {
+                voters[index] = currentVoter;
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('voters', JSON.stringify(voters));
+            
+            // Update UI
+            infoStatus.textContent = 'Voted at ' + new Date(currentVoter.votedAt).toLocaleString();
+            castVoteBtn.disabled = true;
+            
+            // Refresh voters list
+            displayVotersList();
+            
+            alert(`Vote recorded for ${currentVoter.fullName}. Thank you!`);
+        }
+        
+        // Display list of voters
+        function displayVotersList() {
+            votersList.innerHTML = '';
+            
+            if (voters.length === 0) {
+                votersList.innerHTML = '<p>No voters enrolled yet.</p>';
+                return;
+            }
+            
+            voters.forEach(voter => {
+                const card = document.createElement('div');
+                card.className = 'voter-card';
+                
+                card.innerHTML = `
+                    <img src="${voter.photo}" alt="${voter.fullName}" class="voter-photo">
+                    <div>
+                        <h3>${voter.fullName}</h3>
+                        <p><strong>ID:</strong> ${voter.idNumber}</p>
+                        <p><strong>Enrolled:</strong> ${new Date(voter.enrolledAt).toLocaleString()}</p>
+                        <p><strong>Status:</strong> ${voter.hasVoted ? 
+                            `Voted at ${new Date(voter.votedAt).toLocaleString()}` : 'Not voted yet'}</p>
+                    </div>
+                `;
+                
+                votersList.appendChild(card);
+            });
+        }
+        
+        // Load voters from localStorage
+        function loadVoters() {
+            const storedVoters = localStorage.getItem('voters');
+            if (storedVoters) {
+                voters = JSON.parse(storedVoters);
+                displayVotersList();
+            }
+        }
+        
+        // Initialize the app
+        async function init() {
+            await loadModels();
+            loadVoters();
+            startEnrollmentCamera();
+            startVerificationCamera();
+        }
+        
+        // Event listeners
+        captureBtn.addEventListener('click', capturePhoto);
+        enrollBtn.addEventListener('click', enrollVoter);
+        verifyBtn.addEventListener('click', verifyVoter);
+        castVoteBtn.addEventListener('click', castVote);
+        refreshListBtn.addEventListener('click', displayVotersList);
+        
+        // Start the app
+        init();
+    </script>
+</body>
+</html>
