@@ -509,7 +509,8 @@
                 grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             }
         }
-                .processing-overlay {
+
+        .processing-overlay {
             position: absolute;
             top: 0;
             left: 0;
@@ -525,7 +526,7 @@
             z-index: 10;
             display: none;
         }
-        
+
         .processing-spinner {
             border: 4px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
@@ -535,16 +536,21 @@
             animation: spin 1s linear infinite;
             margin-bottom: 15px;
         }
-        
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
-        
+
         .btn-processing {
             position: relative;
         }
-        
+
         .btn-processing::after {
             content: "";
             display: inline-block;
@@ -898,9 +904,9 @@
         }
 
         // Capture photo for enrollment
-async function capturePhoto() {
+        async function capturePhoto() {
             if (!enrollmentStream) return;
-            
+
             // Show processing state
             const processingOverlay = document.createElement('div');
             processingOverlay.className = 'processing-overlay';
@@ -910,40 +916,40 @@ async function capturePhoto() {
             `;
             video.parentNode.appendChild(processingOverlay);
             processingOverlay.style.display = 'flex';
-            
+
             captureBtn.disabled = true;
             captureBtn.innerHTML = '<i class="fas fa-camera"></i> Processing...';
-            
+
             try {
                 // Draw video frame to canvas
                 const context = canvas.getContext('2d');
                 context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                
+
                 // Get the image data
                 capturedPhoto = canvas.toDataURL('image/png');
-                
+
                 // Detect faces in the captured image
                 const detections = await faceapi.detectAllFaces(canvas, new faceapi.TinyFaceDetectorOptions())
                     .withFaceLandmarks()
                     .withFaceDescriptors();
-                
+
                 if (detections.length === 0) {
                     showAlert('No Face', "No face detected. Please try again.", false);
                     return;
                 }
-                
+
                 if (detections.length > 1) {
                     showAlert('Multiple Faces', "Multiple faces detected. Only one person is allowed in the photo.", false);
                     return;
                 }
-                
+
                 // Show preview
                 previewPhoto.src = capturedPhoto;
                 previewPhoto.style.display = 'block';
-                
+
                 // Enable enroll button
                 enrollBtn.disabled = false;
-                
+
                 showAlert('Success', "Photo captured successfully! Complete the form and click 'Enroll Voter'.", true);
             } catch (error) {
                 console.error("Face detection error:", error);
@@ -959,7 +965,7 @@ async function capturePhoto() {
         // Modified verifyVoter function with processing state
         async function verifyVoter() {
             if (!verificationStream) return;
-            
+
             // Show processing state
             const processingOverlay = document.createElement('div');
             processingOverlay.className = 'processing-overlay';
@@ -969,47 +975,47 @@ async function capturePhoto() {
             `;
             verificationVideo.parentNode.appendChild(processingOverlay);
             processingOverlay.style.display = 'flex';
-            
+
             verifyBtn.disabled = true;
             verifyBtn.classList.add('btn-processing');
             verifyBtn.innerHTML = '<i class="fas fa-search"></i> Verifying...';
-            
+
             try {
                 // Draw video frame to canvas
                 const context = verificationCanvas.getContext('2d');
                 context.drawImage(verificationVideo, 0, 0, verificationCanvas.width, verificationCanvas.height);
-                
+
                 // Detect faces in the captured image
                 const detections = await faceapi.detectAllFaces(verificationCanvas, new faceapi.TinyFaceDetectorOptions())
                     .withFaceLandmarks()
                     .withFaceDescriptors();
-                
+
                 if (detections.length === 0) {
                     showAlert('No Face', "No face detected. Please try again.", false);
                     return;
                 }
-                
+
                 if (detections.length > 1) {
                     showAlert('Multiple Faces', "Multiple faces detected. Only one person can verify at a time.", false);
                     return;
                 }
-                
+
                 const currentDescriptor = detections[0].descriptor;
-                
+
                 // Find the best match among registered voters
                 let bestMatch = null;
                 let minDistance = Infinity;
-                
+
                 for (const voter of voters) {
                     const storedDescriptor = new Float32Array(voter.descriptor);
                     const distance = faceapi.euclideanDistance(currentDescriptor, storedDescriptor);
-                    
+
                     if (distance < minDistance && distance < 0.5) {
                         minDistance = distance;
                         bestMatch = voter;
                     }
                 }
-                
+
                 if (bestMatch) {
                     currentVoter = bestMatch;
                     displayVoterInfo(bestMatch);
@@ -1036,37 +1042,49 @@ async function capturePhoto() {
                 showAlert('Error', "Please capture a photo first.", false);
                 return;
             }
-            
+
             // Validate form
             if (!fullName.value || !idNumber.value || !dob.value || !gender.value || !address.value || !phone.value) {
                 showAlert('Error', "Please fill all required fields.", false);
                 return;
             }
-            
+
             // Check if ID already exists
             if (voters.some(voter => voter.idNumber === idNumber.value)) {
                 showAlert('Error', "A voter with this ID number is already registered.", false);
                 return;
             }
-            
+
             // Show processing state
             enrollBtn.disabled = true;
             enrollBtn.classList.add('btn-processing');
             enrollBtn.innerHTML = '<i class="fas fa-save"></i> Saving...';
-            
+
             try {
                 // Get face descriptor
                 const detections = await faceapi.detectAllFaces(canvas, new faceapi.TinyFaceDetectorOptions())
                     .withFaceLandmarks()
                     .withFaceDescriptors();
-                
+
                 if (detections.length === 0) {
                     showAlert('Error', "No face detected in the captured photo. Please try again.", false);
                     return;
                 }
-                
+
                 const descriptor = detections[0].descriptor;
-                
+                const newDescriptor = detections[0].descriptor;
+
+                // Duplicate face check
+                let duplicateFound = voters.some(voter => {
+                    const storedDescriptor = new Float32Array(voter.descriptor);
+                    const distance = faceapi.euclideanDistance(newDescriptor, storedDescriptor);
+                    return distance < 0.5;
+                });
+
+                if (duplicateFound) {
+                    showAlert("This face is already registered with another ID. Duplicate registrations are not allowed.", false);
+                    return;
+                }
                 // Create voter object
                 const voter = {
                     id: Date.now().toString(),
@@ -1082,20 +1100,20 @@ async function capturePhoto() {
                     hasVoted: false,
                     enrolledAt: new Date().toISOString()
                 };
-                
+
                 // Add to voters array
                 voters.push(voter);
-                
+
                 // Save to localStorage
                 localStorage.setItem('voters', JSON.stringify(voters));
-                
+
                 // Reset form
                 document.getElementById('enroll-form').reset();
                 previewPhoto.style.display = 'none';
                 capturedPhoto = null;
-                
+
                 showAlert('Success', `Voter ${voter.fullName} enrolled successfully!`, true);
-                
+
                 // Update counts
                 updateVoterCounts();
             } catch (error) {
@@ -1130,19 +1148,7 @@ async function capturePhoto() {
                     showAlert('Multiple Faces', "Multiple faces detected. Only one person can verify at a time.", false);
                     return;
                 }
-                const newDescriptor = detections[0].descriptor;
 
-                // Duplicate face check
-                let duplicateFound = voters.some(voter => {
-                    const storedDescriptor = new Float32Array(voter.descriptor);
-                    const distance = faceapi.euclideanDistance(newDescriptor, storedDescriptor);
-                    return distance < 0.5;
-                });
-
-                if (duplicateFound) {
-                    showAlert("This face is already registered with another ID. Duplicate registrations are not allowed.", false);
-                    return;
-                }
                 const currentDescriptor = detections[0].descriptor;
 
                 // Find the best match among registered voters
