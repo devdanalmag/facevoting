@@ -2,25 +2,526 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Face Voting System</title>
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
- <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
+            padding-top: 80px; /* Space for fixed header */
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 15px 0;
+            box-shadow: var(--box-shadow);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 70px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo i {
+            margin-right: 10px;
+            font-size: 24px;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 10px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            font-size: 14px;
+        }
+
+        nav ul li a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        nav ul li a.active {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+            padding-top: 20px;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+        }
+
+        .card-title i {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: var(--gray);
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+        }
+
+        .btn-danger:hover {
+            background-color: #e11d74;
+        }
+
+        .btn:disabled {
+            background-color: var(--light-gray);
+            color: var(--gray);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 14px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--light-gray);
+            border-radius: var(--border-radius);
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .camera-container {
+            position: relative;
+            margin: 15px 0;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        video {
+            width: 100%;
+            background-color: var(--dark);
+            display: block;
+        }
+
+        canvas {
+            display: none;
+        }
+
+        .photo-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: var(--border-radius);
+            object-fit: cover;
+            border: 3px solid white;
+            box-shadow: var(--box-shadow);
+            display: none;
+            margin: 15px auto;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        /* Custom alert popup */
+        .alert-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 2000;
+            max-width: 90%;
+            width: 300px;
+            text-align: center;
+            display: none;
+        }
+
+        .alert-popup.success {
+            border-top: 4px solid #28a745;
+        }
+
+        .alert-popup.error {
+            border-top: 4px solid #dc3545;
+        }
+
+        .alert-popup .alert-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .alert-popup .alert-message {
+            margin-bottom: 15px;
+        }
+
+        .alert-popup .alert-close {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: none;
+        }
+
+        .voter-info {
+            background-color: var(--light);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--gray);
+        }
+
+        .voters-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .voter-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .voter-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .voter-photo {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+        .voter-details {
+            padding: 15px;
+        }
+
+        .voter-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+
+        .voter-id {
+            color: var(--gray);
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .voter-status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 8px;
+        }
+
+        .status-voted {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-not-voted {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            background-color: var(--light-gray);
+            color: var(--gray);
+            margin-left: 8px;
+        }
+
+        /* Mobile menu toggle */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-top: 60px;
+            }
+            
+            header {
+                padding: 10px 0;
+                height: 60px;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            nav {
+                position: fixed;
+                top: 60px;
+                left: 0;
+                right: 0;
+                background: linear-gradient(135deg, var(--primary), var(--secondary));
+                padding: 10px 20px;
+                box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+                display: none;
+            }
+            
+            nav.active {
+                display: block;
+            }
+            
+            nav ul {
+                flex-direction: column;
+            }
+            
+            nav ul li {
+                margin: 5px 0;
+            }
+            
+            nav ul li a {
+                display: block;
+                padding: 8px 0;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .camera-container {
+                max-width: 100%;
+            }
+            
+            .voter-photo {
+                height: 150px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .voters-list {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- Overlay for popups -->
+    <div class="overlay" id="overlay"></div>
+    
+    <!-- Alert Popup -->
+    <div class="alert-popup" id="alertPopup">
+        <div class="alert-title" id="alertTitle">Alert</div>
+        <div class="alert-message" id="alertMessage">This is an alert message.</div>
+        <button class="alert-close" id="alertClose">OK</button>
+    </div>
+    
     <header>
-        <div class="container header-content">
+        <div class="header-content">
             <div class="logo">
-                <i>👤</i>
+                <i class="fas fa-vote-yea"></i>
                 <span>Face Voting</span>
             </div>
-            <nav>
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <nav id="mainNav">
                 <ul>
-                    <li><a href="#" class="nav-link active" data-page="enroll-page">Enroll Voters</a></li>
-                    <li><a href="#" class="nav-link" data-page="verify-page">Verify & Vote</a></li>
-                    <li><a href="#" class="nav-link" data-page="admin-page">LIST</a></li>
+                    <li><a href="#" class="nav-link active" data-page="enroll-page">Enroll</a></li>
+                    <li><a href="#" class="nav-link" data-page="verify-page">Verify</a></li>
+                    <li><a href="#" class="nav-link" data-page="admin-page">List</a></li>
                 </ul>
             </nav>
         </div>
@@ -30,7 +531,7 @@
         <!-- Enrollment Page -->
         <div id="enroll-page" class="page active">
             <div class="card">
-                <h2 class="card-title"><span class="icon icon-enroll"></span>Voter Enrollment</h2>
+                <h2 class="card-title"><i class="fas fa-user-plus"></i>Voter Enrollment</h2>
                 <p>Register new voters by filling the form and capturing their facial data.</p>
                 
                 <div class="grid-2">
@@ -74,16 +575,16 @@
                     
                     <div>
                         <div class="camera-container">
-                            <video id="video" width="640" height="480" autoplay></video>
-                            <canvas id="canvas" width="640" height="480"></canvas>
+                            <video id="video" width="400" height="300" autoplay playsinline></video>
+                            <canvas id="canvas" width="400" height="300"></canvas>
                         </div>
                         
                         <img id="preview-photo" class="photo-preview">
                         
                         <div class="action-buttons">
-                            <button id="capture-btn" class="btn"><span class="icon icon-camera"></span>Capture Photo</button>
-                            <button id="enroll-btn" class="btn btn-success" disabled><span class="icon icon-save"></span>Enroll Voter</button>
-                            <button id="reset-camera-btn" class="btn btn-secondary"><span class="icon icon-refresh"></span>Reset Camera</button>
+                            <button id="capture-btn" class="btn"><i class="fas fa-camera"></i> Capture Photo</button>
+                            <button id="enroll-btn" class="btn btn-success" disabled><i class="fas fa-save"></i> Enroll Voter</button>
+                            <button id="reset-camera-btn" class="btn btn-secondary"><i class="fas fa-sync-alt"></i> Reset Camera</button>
                         </div>
                     </div>
                 </div>
@@ -93,43 +594,41 @@
         <!-- Verification Page -->
         <div id="verify-page" class="page">
             <div class="card">
-                <h2 class="card-title"><span class="icon icon-verify"></span>Voter Verification</h2>
+                <h2 class="card-title"><i class="fas fa-user-check"></i>Voter Verification</h2>
                 <p>Verify voters by scanning their face. Once verified, they can cast their vote.</p>
                 
                 <div class="camera-container">
-                    <video id="verification-video" width="640" height="480" autoplay></video>
-                    <canvas id="verification-canvas" width="640" height="480"></canvas>
+                    <video id="verification-video" width="400" height="300" autoplay playsinline></video>
+                    <canvas id="verification-canvas" width="400" height="300"></canvas>
                 </div>
                 
                 <div class="action-buttons">
-                    <button id="verify-btn" class="btn"><span class="icon icon-search"></span>Verify Voter</button>
+                    <button id="verify-btn" class="btn"><i class="fas fa-search"></i> Verify Voter</button>
                 </div>
                 
-                <div id="verification-result" class="alert"></div>
-                
                 <div id="voter-info" class="voter-info">
-                    <h3><span class="icon icon-user"></span>Voter Information</h3>
+                    <h3><i class="fas fa-user"></i> Voter Information</h3>
                     <div class="info-grid">
-                        <div class="info-label"><span class="icon icon-user"></span>Name:</div>
+                        <div class="info-label"><i class="fas fa-user"></i> Name:</div>
                         <div id="info-name"></div>
-                        <div class="info-label"><span class="icon icon-id"></span>ID Number:</div>
+                        <div class="info-label"><i class="fas fa-id-card"></i> ID:</div>
                         <div id="info-id"></div>
-                        <div class="info-label"><span class="icon icon-calendar"></span>Date of Birth:</div>
+                        <div class="info-label"><i class="fas fa-calendar"></i> DOB:</div>
                         <div id="info-dob"></div>
-                        <div class="info-label"><span class="icon icon-gender"></span>Gender:</div>
+                        <div class="info-label"><i class="fas fa-venus-mars"></i> Gender:</div>
                         <div id="info-gender"></div>
-                        <div class="info-label"><span class="icon icon-home"></span>Address:</div>
+                        <div class="info-label"><i class="fas fa-home"></i> Address:</div>
                         <div id="info-address"></div>
-                        <div class="info-label"><span class="icon icon-phone"></span>Phone:</div>
+                        <div class="info-label"><i class="fas fa-phone"></i> Phone:</div>
                         <div id="info-phone"></div>
-                        <div class="info-label"><span class="icon icon-email"></span>Email:</div>
+                        <div class="info-label"><i class="fas fa-envelope"></i> Email:</div>
                         <div id="info-email"></div>
-                        <div class="info-label">Voting Status:</div>
+                        <div class="info-label">Status:</div>
                         <div id="info-status"></div>
                     </div>
                     
                     <div class="action-buttons">
-                        <button id="cast-vote-btn" class="btn btn-success"><span class="icon icon-vote"></span>Cast Vote</button>
+                        <button id="cast-vote-btn" class="btn btn-success"><i class="fas fa-check-circle"></i> Cast Vote</button>
                     </div>
                 </div>
             </div>
@@ -138,11 +637,11 @@
         <!-- Admin Page -->
         <div id="admin-page" class="page">
             <div class="card">
-                <h2 class="card-title"><span class="icon icon-admin"></span>LIST</h2>
+                <h2 class="card-title"><i class="fas fa-list"></i> Voter List</h2>
                 <p>View and manage all registered voters and voting statistics.</p>
                 
                 <div class="action-buttons">
-                    <button id="refresh-list-btn" class="btn"><span class="icon icon-refresh"></span>Refresh List</button>
+                    <button id="refresh-list-btn" class="btn"><i class="fas fa-sync-alt"></i> Refresh List</button>
                     <div class="badge" id="voter-count">0 voters</div>
                     <div class="badge" id="voted-count">0 voted</div>
                 </div>
