@@ -76,9 +76,9 @@ navLinks.forEach(link => {
 // Initialize face-api.js models
 async function loadModels() {
     try {
-        await faceapi.nets.tinyFaceDetector.loadFromUri('/facevoting/models');
-        await faceapi.nets.faceRecognitionNet.loadFromUri('/facevoting/models');
-        await faceapi.nets.faceLandmark68Net.loadFromUri('/facevoting/models');
+        await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+        await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
+        await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
         console.log('Face detection models loaded');
     } catch (error) {
         console.error('Error loading models:', error);
