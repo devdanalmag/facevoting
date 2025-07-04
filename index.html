@@ -1123,7 +1123,7 @@
                     address: address.value,
                     phone: phone.value,
                     email: email.value,
-                    photos: capturedPhoto,
+                    photos: null, // Google Sheets does not support images directly
                     descriptors: Array.from(descriptor),
                     hasVoted: false,
                     enrolledAt: new Date().toISOString()
