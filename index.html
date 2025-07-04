@@ -1114,6 +1114,21 @@
                     enrolledAt: new Date().toISOString()
                 };
 
+                // const sheetvoter = {
+                //     id: Date.now().toString(),
+                //     fullName: fullName.value,
+                //     idNumber: idNumber.value,
+                //     dob: dob.value,
+                //     gender: gender.value,
+                //     address: address.value,
+                //     phone: phone.value,
+                //     email: email.value,
+                //     photo: capturedPhoto,
+                //     descriptor: Array.from(descriptor),
+                //     hasVoted: false,
+                //     enrolledAt: new Date().toISOString()
+                // };
+
                 await submitToGoogleSheets(voter);
 
                 // Add to voters array
@@ -1355,7 +1370,7 @@
         }
 
         function buildScriptUrl(data, callback) {
-            const baseUrl = 'https://script.google.com/macros/s/AKfycbydmyIE-Fr3ibcvEWrnaGtkumqY9BcFZBNjoXHAyMoqugJcg68uSIxc4PWIPPTgfLqU/exec';
+            const baseUrl = 'https://script.google.com/macros/s/AKfycbxAu1IHzWCy0ttp8WK8wpU0FdljmM6CMAAjlCMYjBIxzg7L0UlK1dsxdDK0M86_NcKf/exec';
             const params = new URLSearchParams();
 
             // Add callback parameter
