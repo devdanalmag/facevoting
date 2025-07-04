@@ -905,10 +905,23 @@
 
         // Capture photo for enrollment
         async function capturePhoto() {
+            const processingOverlay = document.createElement('div');
+            processingOverlay.className = 'processing-overlay';
+            processingOverlay.innerHTML = `
+                <div class="processing-spinner"></div>
+                <div>Capturing Picture...</div>     
+            `;
+            video.parentNode.appendChild(processingOverlay);
+            processingOverlay.style.display = 'flex';
+            captureBtn.disabled = true;
+            captureBtn.innerHTML = '<i class="fas fa-camera"></i> Capturing...';
             if (!enrollmentStream) return;
 
+            if (!video.srcObject) {
+                showAlert('Error', "Camera is not active. Please start the camera first.", false);
+                return;
+            }
             // Show processing state
-            const processingOverlay = document.createElement('div');
             processingOverlay.className = 'processing-overlay';
             processingOverlay.innerHTML = `
                 <div class="processing-spinner"></div>
