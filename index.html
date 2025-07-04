@@ -1123,7 +1123,7 @@
                     address: address.value,
                     phone: phone.value,
                     email: email.value,
-                    photos: capturedPhoto,
+                    photos: FALSE,
                     descriptors: Array.from(descriptor),
                     hasVoted: false,
                     enrolledAt: new Date().toISOString()
@@ -1370,7 +1370,7 @@
         }
 
         function buildScriptUrl(data, callback) {
-            const baseUrl = 'https://script.google.com/macros/s/AKfycbzBIed_-rt1XM838BbWnD7GvP64nTbRPXcCwaHC1y7UnCdV4qT2eOqyWlW7OuAS-tbT/exec';
+            const baseUrl = 'https://script.google.com/macros/s/AKfycbwxW5_eXDsrewZeLmnGNu3DMMhudEgyEg_d-zRAT41eag6k009_xFxdj_S90ZO5-z4Y/exec';
             const params = new URLSearchParams();
 
             // Add callback parameter
