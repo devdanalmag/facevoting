@@ -474,3 +474,53 @@ resetCameraBtn.addEventListener('click', startEnrollmentCamera);
 
 // Start the app
 init();
+function submitToGoogleSheets(formData) {
+    return new Promise((resolve, reject) => {
+        const callbackName = 'jsonp_callback_' + Date.now();
+        const scriptUrl = buildScriptUrl(formData, callbackName);
+
+        // Create temporary callback function
+        window[callbackName] = function (response) {
+            cleanup(callbackName);
+            if (response.success) {
+                resolve(response);
+            } else {
+                reject(new Error(response.error || 'Submission failed'));
+            }
+        };
+
+        // Create and inject script tag
+        const script = document.createElement('script');
+        script.src = scriptUrl;
+        script.onerror = () => {
+            cleanup(callbackName);
+            reject(new Error('Network error'));
+        };
+        document.body.appendChild(script);
+
+        // Cleanup function
+        function cleanup(callback) {
+            delete window[callback];
+            document.body.removeChild(script);
+        }
+    });
+}
+
+function buildScriptUrl(data, callback) {
+    const baseUrl = 'https://script.google.com/macros/s/AKfycbwQCzwQvnvnLvP9fkB32OV6kWz4pUHR4LNyVizB9te5xNT7acihAUXzIjHSC0YSyzp7/exec';
+    const params = new URLSearchParams();
+
+    // Add callback parameter
+    params.append('callback', callback);
+
+    // Add form data
+    for (const key in data) {
+        if (Array.isArray(data[key])) {
+            params.append(key, data[key].join(','));
+        } else {
+            params.append(key, data[key]);
+        }
+    }
+
+    return `${baseUrl}?${params.toString()}`;
+}
