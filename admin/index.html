@@ -1,62 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-<script>
-    // Function to set cookie
-    function setCookie(name, value, days) {
-        const date = new Date();
-        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-        const expires = "expires=" + date.toUTCString();
-        document.cookie = name + "=" + value + ";" + expires + ";path=/";
-    }
-
-    // Function to get cookie
-    function getCookie(name) {
-        const cookieName = name + "=";
-        const decodedCookie = decodeURIComponent(document.cookie);
-        const cookieArray = decodedCookie.split(';');
-        for (let i = 0; i < cookieArray.length; i++) {
-            let cookie = cookieArray[i];
-            while (cookie.charAt(0) === ' ') {
-                cookie = cookie.substring(1);
-            }
-            if (cookie.indexOf(cookieName) === 0) {
-                return cookie.substring(cookieName.length, cookie.length);
-            }
-        }
-        return "";
-    }
-
-    // Function to delete cookie
-    function deleteCookie(name) {
-        document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-    }
-
-    // Main verification logic
-    if (!getCookie('PAGEACCESS')) {
-        const mycode = prompt("This Page is Under Development. Please enter your verification code:");
-
-        if (mycode === null || mycode.trim() === "") {
-            console.log(mycode === null ? "User cancelled the prompt." : "No code entered.");
-            deleteCookie('PAGEACCESS');
-            alert("Access denied. Redirecting to homepage.");
-            window.location.href = "index.html";
-        }
-        else {
-            const trimmedCode = mycode.trim().toUpperCase();
-
-            if (trimmedCode !== "0116/23") {
-                console.log("Invalid code entered: " + trimmedCode);
-                deleteCookie('PAGEACCESS');
-                alert("Invalid code. Redirecting to homepage.");
-                window.location.href = "index.html";
-            }
-            else {
-                console.log("Code verified successfully.");
-                setCookie('PAGEACCESS', 'true', 1); // Store for 1 day
-            }
-        }
-    }
-</script>
 
 <head>
     <meta charset="UTF-8">
@@ -626,111 +569,7 @@
 <body>
     <!-- Overlay for popups -->
     <div class="overlay" id="overlay"></div>
-    <!-- Project Name Animated Popup -->
-    <div id="project-popup"
-        style="display: flex; align-items: center; justify-content: center; position: fixed; z-index: 3000; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(135deg, #4361ee 60%, #4cc9f0 100%);">
-        <div
-            style="background: rgba(255,255,255,0.95); border-radius: 18px; box-shadow: 0 8px 32px rgba(67,97,238,0.18); padding: 48px 32px; text-align: center; position: relative; min-width: 320px; animation: popupFadeIn 1s cubic-bezier(.68,-0.55,.27,1.55);">
-            <div style="font-size: 48px; color: #4361ee; margin-bottom: 12px; animation: logoBounce 1.2s;">
-                <i class="fas fa-vote-yea"></i>
-            </div>
-            <div
-                style="font-size: 2.2rem; font-weight: 700; color: #22223b; letter-spacing: 2px; margin-bottom: 10px; animation: textSlideIn 1.2s;">
-                BIOMETRIC IMAGE VOTING SYSTEM
-            </div>
-            <div
-                style="font-size: 1.5rem; font-weight: 700; color: #294e38; letter-spacing: 1px; margin-bottom: 10px; animation: textSlideIn 1.2s;">
-                BY: Ode Sunday Peacemaker
-            </div>
-            <div
-                style="font-size: 1.5rem; font-weight: 700; color: #5f2e5f; letter-spacing: 1px; margin-bottom: 10px; animation: textSlideIn 1.2s;">
-                Supervised by: Engr. Zaharaddin U. Dahiru
-            </div>
-            <div style="font-size: 1.1rem; color: #3f37c9; margin-bottom: 24px; animation: textFadeIn 1.6s;">
-                Secure, Fast &amp; Modern Voting Experience
-            </div>
-            <button id="close-project-popup"
-                style="background: linear-gradient(90deg, #4361ee, #4cc9f0); color: #fff; border: none; border-radius: 8px; padding: 10px 32px; font-size: 1rem; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(67,97,238,0.10); transition: background 0.3s;">
-                Enter
-            </button>
-        </div>
-    </div>
-    <style>
-        @keyframes popupFadeIn {
-            0% {
-                opacity: 0;
-                transform: scale(0.8);
-            }
 
-            80% {
-                opacity: 1;
-                transform: scale(1.05);
-            }
-
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        @keyframes logoBounce {
-            0% {
-                transform: scale(0.5) rotate(-30deg);
-            }
-
-            60% {
-                transform: scale(1.2) rotate(10deg);
-            }
-
-            100% {
-                transform: scale(1) rotate(0);
-            }
-        }
-
-        @keyframes textSlideIn {
-            0% {
-                opacity: 0;
-                transform: translateY(40px);
-            }
-
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes textFadeIn {
-            0% {
-                opacity: 0;
-            }
-
-            100% {
-                opacity: 1;
-            }
-        }
-    </style>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const popup = document.getElementById('project-popup');
-            const closeBtn = document.getElementById('close-project-popup');
-            // Prevent scroll while popup is open
-            document.body.style.overflow = 'hidden';
-            closeBtn.addEventListener('click', function () {
-                popup.style.opacity = '0';
-                popup.style.transition = 'opacity 0.5s';
-                setTimeout(() => {
-                    popup.style.display = 'none';
-                    document.body.style.overflow = '';
-                }, 1000);
-            });
-            // Optional: auto-close after 3.5s
-            // setTimeout(() => {
-            //     if (popup.style.display !== 'none') {
-            //         closeBtn.click();
-            //     }
-            // }, 3500);
-        });
-    </script>
     <!-- Alert Popup -->
     <div class="alert-popup" id="alertPopup">
         <div class="alert-title" id="alertTitle">Alert</div>
@@ -1557,7 +1396,7 @@
         }
 
         function buildScriptUrl(data, callback) {
-            const baseUrl = 'https://script.google.com/macros/s/AKfycbwZIc_3XT0cRHIhJM7tmjro96p7gxAirTweQvkksx5INN3m8yyOLgi0B3v5EmwBqgwB/exec';
+            const baseUrl = 'https://script.google.com/macros/s/AKfycbyenLa0BLveMJXgZwey4ylu0zJDJmYj8qiw-EVEZzriNSJ7_R-O6ykNME11WcR6b6xe/exec';
             const params = new URLSearchParams();
 
             // Add callback parameter
