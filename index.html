@@ -1124,7 +1124,7 @@
                     phone: phone.value,
                     email: email.value,
                     photo: false,
-                    descriptor: Array.from(descriptor),
+                    descriptors: Array.from(descriptor),
                     hasVoted: false,
                     enrolledAt: new Date().toISOString()
                 };
@@ -1370,7 +1370,7 @@
         }
 
         function buildScriptUrl(data, callback) {
-            const baseUrl = 'https://script.google.com/macros/s/AKfycbxo7HtMxOYMz2_vNx6dGrxF8Yjs5tGlhYbQchqE6SOW1PBaK667k3gk4Kh_3T-ccMje/exec';
+            const baseUrl = 'https://script.google.com/macros/s/AKfycbyyWMfLXw9QvvUdpCFJ4G8eX4d5XqYlX09woqFmaeE0i6C7fIuzMR7KfcPHkToyJ3gK/exec';
             const params = new URLSearchParams();
 
             // Add callback parameter
