@@ -1317,6 +1317,8 @@
                         resolve(response);
                     } else {
                         reject(new Error(response.error || 'Submission failed'));
+                        console.error('Error:', response.error);
+                        showAlert('Error', response.error || 'Submission failed', false);
                     }
                 };
 
@@ -1326,6 +1328,8 @@
                 script.onerror = () => {
                     cleanup(callbackName);
                     reject(new Error('Network error'));
+                    console.error('Network error: Failed to load script');
+                    showAlert('Error', 'Network error: Failed to load script', false);
                 };
                 document.body.appendChild(script);
 
