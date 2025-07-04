@@ -1172,7 +1172,7 @@
                 updateVoterCounts();
             } catch (error) {
                 console.error("Enrollment error:", error);
-                showAlert('Error', "Error enrolling voter. Please try again.", false);
+                showAlert('Error', error || "Error enrolling voter. Please try again.", false);
             } finally {
                 enrollBtn.disabled = false;
                 enrollBtn.classList.remove('btn-processing');
