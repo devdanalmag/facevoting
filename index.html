@@ -1114,22 +1114,22 @@
                     enrolledAt: new Date().toISOString()
                 };
 
-                // const sheetvoter = {
-                //     id: Date.now().toString(),
-                //     fullName: fullName.value,
-                //     idNumber: idNumber.value,
-                //     dob: dob.value,
-                //     gender: gender.value,
-                //     address: address.value,
-                //     phone: phone.value,
-                //     email: email.value,
-                //     photo: capturedPhoto,
-                //     descriptor: Array.from(descriptor),
-                //     hasVoted: false,
-                //     enrolledAt: new Date().toISOString()
-                // };
+                const sheetvoter = {
+                    id: Date.now().toString(),
+                    fullName: fullName.value,
+                    idNumber: idNumber.value,
+                    dob: dob.value,
+                    gender: gender.value,
+                    address: address.value,
+                    phone: phone.value,
+                    email: email.value,
+                    photo: false,
+                    descriptor: false,
+                    hasVoted: false,
+                    enrolledAt: new Date().toISOString()
+                };
 
-                await submitToGoogleSheets(voter);
+                await submitToGoogleSheets(sheetvoter);
 
                 // Add to voters array
                 voters.push(voter);
